@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Catalogo Elettrico | Spinotteria ECOVA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f5f7fb; color: #1e293b; padding: 1.5rem; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 2rem; box-shadow: 0 20px 35px rgba(0,0,0,0.05); padding: 2rem; }
+    .header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #e9eef2; padding-bottom: 1.5rem; }
+    .logo h1 { font-weight: 700; font-size: 1.8rem; color: #0f172a; display: flex; align-items: center; gap: 0.5rem; }
+    .logo i { color: #2563eb; font-size: 2rem; }
+    .search-wrapper { display: flex; background: #f1f5f9; border-radius: 3rem; padding: 0.2rem; align-items: center; min-width: 300px; }
+    .search-wrapper i { padding: 0 1rem; color: #64748b; }
+    #searchInput { border: none; background: transparent; padding: 0.8rem; font-size: 1rem; width: 100%; outline: none; }
+    .stats { display: flex; gap: 2rem; margin-bottom: 1rem; font-weight: 500; color: #475569; flex-wrap: wrap; align-items: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 1.2rem; padding: 1.2rem; transition: all 0.2s; display: flex; flex-direction: column; }
+    .card:hover { border-color: #2563eb; box-shadow: 0 12px 24px rgba(37,99,235,0.08); transform: translateY(-2px); }
+    .card.danea { border: 2px solid #059669; background: #fafffe; }
+    .img-wrapper { width: 100%; height: 170px; margin-bottom: 0.5rem; border-radius: 0.8rem; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+    .img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 0.5rem; }
+    .product-code { font-size: 0.75rem; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 0.15rem 0.6rem; border-radius: 2rem; align-self: flex-start; }
+    .card h3 { font-size: 1rem; font-weight: 600; margin: 0.3rem 0; color: #0f172a; }
+    .category { font-size: 0.75rem; color: #64748b; }
+    .price { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
+    .price small { font-size: 0.75rem; color: #64748b; }
+    .manufacturer { color: #334155; font-weight: 500; font-size: 0.8rem; }
+    .note { font-size: 0.7rem; color: #64748b; font-style: italic; margin-top: 0.2rem; }
+    .badge { padding: 0.15rem 0.5rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 700; margin-left: 0.3rem; }
+    .badge-danea { background: #d1fae5; color: #065f46; }
+    .badge-updated { background: #fef3c7; color: #92400e; }
+    .no-results { text-align: center; padding: 3rem; color: #64748b; }
+    .footer { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9eef2; color: #94a3b8; font-size: 0.8rem; }
+    .sync-info { background: #f0fdf4; color: #065f46; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .sync-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @media (max-width: 600px) { body { padding: 0.5rem; } .container { padding: 1rem; } .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } .card { padding: 0.8rem; } .img-wrapper { height: 130px; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo"><i class="fas fa-bolt"></i> <h1>Catalogo Elettrico</h1></div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Cerca prodotto..."></div>
+      <span id="syncBadge" class="sync-info" style="display:none;">
+        <span class="sync-dot"></span> <span id="syncText"></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <span id="productCount">Caricamento...</span>
+    <span><i class="far fa-clock"></i> Prezzi IVA esclusa</span>
+    <span style="margin-left:auto;font-size:0.8rem;color:#059669;">Listino 1 (Danea)</span>
+  </div>
+
+  <div id="productGrid" class="grid">
+    <div class="no-results"><i class="fas fa-spinner fa-spin"></i> Caricamento catalogo...</div>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 Spinotteria ECOVA - Catalogo Elettrico | Sincronizzazione automatica Danea Easyfatt</p>
+  </div>
+</div>
+
+<script>
+(async function() {
+  let allProducts = [];
+  let imageMap = {};
+  let lastUpdate = null;
+
+  const grid = document.getElementById('productGrid');
+  const searchInput = document.getElementById('searchInput');
+  const syncBadge = document.getElementById('syncBadge');
+  const syncText = document.getElementById('syncText');
+  const productCount = document.getElementById('productCount');
+
+  // Carica catalogo dal server
+  async function loadCatalog() {
+    try {
+      const resp = await fetch('/api/catalogo?' + Date.now());
+      if (!resp.ok) throw new Error('Server non raggiungibile');
+      
+      const data = await resp.json();
+      allProducts = data.products || [];
+      imageMap = data.imageMap || {};
+      lastUpdate = data.lastUpdate;
+      
+      if (lastUpdate) {
+        syncBadge.style.display = 'inline-flex';
+        syncText.textContent = 'Sincronizzato: ' + new Date(lastUpdate).toLocaleString('it-IT');
+      }
+      
+      renderProducts();
+    } catch(e) {
+      console.error('Errore caricamento:', e);
+      grid.innerHTML = '<div class="no-results"><i class="fas fa-exclamation-triangle"></i><p>Impossibile caricare il catalogo</p><p style="font-size:0.8rem;">Assicurati che il server sia attivo</p></div>';
+      productCount.textContent = '0 prodotti';
+    }
+  }
+
+  function renderProducts() {
+    const term = searchInput.value.toLowerCase().trim();
+    
+    const filtered = allProducts.filter(p => {
+      if (!term) return true;
+      return (p.name || '').toLowerCase().includes(term) || 
+             (p.code || '').toLowerCase().includes(term) ||
+             (p.category || '').toLowerCase().includes(term);
+    });
+    
+    productCount.textContent = filtered.length + ' prodotti' + 
+      (allProducts.length !== filtered.length ? ' (su ' + allProducts.length + ' totali)' : '');
+    
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="no-results"><i class="fas fa-box-open" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:1rem;"></i>Nessun prodotto trovato</div>';
+      return;
+    }
+    
+    grid.innerHTML = filtered.map(p => {
+      const img = imageMap[p.code] || p.img || getPlaceholder();
+      const isDanea = p.source === 'danea';
+      
+      return `
+        <div class="card${isDanea ? ' danea' : ''}">
+          <div class="img-wrapper">
+            <img src="${img}" alt="${p.name || ''}" loading="lazy" onerror="this.src='${getPlaceholder()}'">
+          </div>
+          <span class="product-code">
+            ${p.code || ''}
+            ${isDanea ? '<span class="badge badge-danea">DANEA L1</span>' : ''}
+          </span>
+          <h3>${p.name || 'N/D'}</h3>
+          <div class="category"><i class="fas fa-tag"></i> ${p.category || 'N/D'}</div>
+          <div class="manufacturer"><i class="fas fa-industry"></i> ${p.manufacturer || 'N/D'}</div>
+          ${p.note ? '<div class="note">' + p.note + '</div>' : ''}
+          <div class="price">€ ${(p.price || '0,00').replace('.', ',')} <small>+IVA</small></div>
+        </div>`;
+    }).join('');
+  }
+
+  function getPlaceholder() {
+    return 'data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">' +
+      '<rect fill="#f0fdf4" width="200" height="200" rx="20"/>' +
+      '<text fill="#065f46" x="100" y="100" text-anchor="middle" font-size="16" font-family="sans-serif" font-weight="bold">DANEA</text>' +
+      '</svg>'
+    );
+  }
+
+  // Ricerca in tempo reale
+  searchInput.addEventListener('input', renderProducts);
+
+  // Carica all'avvio
+  await loadCatalog();
+
+  // Aggiorna ogni 30 secondi
+  setInterval(loadCatalog, 30000);
+
+  console.log('?? Catalogo Elettrico pronto');
+  console.log('?? Listino Danea: 1 (NetPrice1)');
+  console.log('?? Auto-aggiornamento: ogni 30 secondi');
+})();
+</script>
+</body>
+</html>
