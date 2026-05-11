@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Catalogo Elettrico</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:#f5f7fb;color:#1e293b;padding:1.5rem}.container{max-width:1400px;margin:0 auto;background:#fff;border-radius:2rem;padding:2rem}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}.header h1{font-size:1.8rem;color:#0f172a}.search-wrapper{display:flex;background:#f1f5f9;border-radius:3rem;padding:.3rem 1rem}.search-wrapper input{border:none;background:0 0;padding:.8rem;font-size:1rem;outline:0;width:250px}.stats{margin-bottom:1rem;color:#475569}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem}.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem}.card.danea{border:2px solid #059669;background:#fafffe}.img-wrapper{height:160px;background:#f8fafc;border-radius:.8rem;display:flex;align-items:center;justify-content:center;margin-bottom:.5rem}.img-wrapper img{max-width:100%;max-height:100%;object-fit:contain}.product-code{font-size:.75rem;font-weight:600;color:#2563eb;background:#eff6ff;padding:.15rem .6rem;border-radius:2rem}.card h3{font-size:1rem;margin:.4rem 0}.price{font-size:1.3rem;font-weight:700}.badge-danea{background:#d1fae5;color:#065f46;padding:.1rem .5rem;border-radius:1rem;font-size:.65rem;margin-left:.3rem}.footer{text-align:center;margin-top:2rem;color:#94a3b8;font-size:.8rem}@media(max-width:600px){.grid{grid-template-columns:1fr 1fr}}
+</style></head><body><div class="container">
+<div class="header"><h1><i class="fas fa-bolt" style="color:#2563eb"></i> Catalogo Elettrico</h1>
+<div class="search-wrapper"><i class="fas fa-search" style="color:#64748b"></i><input id="searchInput" placeholder="Cerca..."></div></div>
+<div class="stats"><span id="productCount">Caricamento...</span> <span>Listino 1 Danea</span></div>
+<div id="productGrid" class="grid"></div>
+<div class="footer">© 2025 Spinotteria ECOVA | Sync Danea</div>
+</div>
+<script>
+(async function(){
+const grid=document.getElementById('productGrid'),srch=document.getElementById('searchInput');
+let all=[],imgMap={};
+async function load(){try{const r=await fetch('/api/catalogo?'+Date.now()),d=await r.json();all=d.products||[];imgMap=d.imageMap||{};document.getElementById('productCount').textContent=all.length+' prodotti'}catch(e){console.log(e)}render()}
+function render(){const t=srch.value.toLowerCase();const f=all.filter(p=>!t||p.name.toLowerCase().includes(t)||p.code.toLowerCase().includes(t));grid.innerHTML=f.map(p=>{const img=imgMap[p.code]||p.img||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#f0fdf4" width="200" height="200" rx="20"/><text fill="#065f46" x="100" y="100" text-anchor="middle" font-size="16">DANEA</text></svg>');return`<div class="card${p.source==='danea'?' danea':''}"><div class="img-wrapper"><img src="${img}" alt="${p.name}"></div><span class="product-code">${p.code}${p.source==='danea'?'<span class="badge-danea">DANEA</span>':''}</span><h3>${p.name}</h3><div style="color:#64748b;font-size:.8rem">${p.category||''} · ${p.manufacturer||''}</div><div class="price">€ ${(p.price||'0,00').replace('.',',')}</div></div>`}).join('')}
+srch.addEventListener('input',render);load();setInterval(load,30000)
+})();
+</script></body></html>
